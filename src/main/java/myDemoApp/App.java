@@ -10,19 +10,22 @@ import static spark.Spark.port;
 import static spark.Spark.post;
 
 import java.util.ArrayList;
+
+
 import java.util.HashMap;
 import java.util.Map;
 
+
+
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
-
 
 public class App {
     
         public String getGreeting() {
             return "Hello world.";
         }
-    
+
         public static boolean search(ArrayList<Integer> array, int e) {
           System.out.println("inside search");
           if (array == null) return false;
@@ -34,6 +37,7 @@ public class App {
         }
     
         public static void main(String[] args) {
+        
             port(getHerokuAssignedPort());
     
             get("/", (req, res) -> "Hello, World");
@@ -42,29 +46,65 @@ public class App {
               //System.out.println(req.queryParams("input1"));
               //System.out.println(req.queryParams("input2"));
     
+    
               String input1 = req.queryParams("input1");
               java.util.Scanner sc1 = new java.util.Scanner(input1);
               sc1.useDelimiter("[;\r\n]+");
-              java.util.ArrayList<Integer> inputList = new java.util.ArrayList<>();
+              java.util.ArrayList<Integer> inputList = new java.util.ArrayList<Integer>();
               while (sc1.hasNext())
               {
-                int value = Integer.parseInt(sc1.next().replaceAll("\\s",""));
-                inputList.add(value);
+                inputList.add(Integer.parseInt(sc1.next().replaceAll("\\s","")));
               }
               sc1.close();
-              System.out.println(inputList);
+              
+              String input2 = req.queryParams("input2");
+              java.util.Scanner sc2 = new java.util.Scanner(input2);
+              sc2.useDelimiter("[;\r\n]+");
+              ArrayList<Integer> inputIntegerArray = new ArrayList<Integer>();
+              while(sc2.hasNext())
+              {
+                inputIntegerArray.add(Integer.parseInt(sc2.next().replaceAll("\\s","")));
+              }
+              sc2.close();
     
+              String input3 = req.queryParams("input3");
+              java.util.Scanner sc3 = new java.util.Scanner(input3);
+              sc3.useDelimiter("[;\r\n]+");
+              ArrayList<String> stringArr = new ArrayList<String>();
+              while(sc3.hasNext())
+              {
+                stringArr.add(sc3.next().replaceAll("\\s", ""));
+              } 
+              
+              sc3.close();
+
+              String input4 = req.queryParams("input4");
+              java.util.Scanner sc4 = new java.util.Scanner(input4);
+              sc4.useDelimiter("[;\r\n]+");
+              ArrayList<Boolean> boolArray = new ArrayList<Boolean>();
+              while(sc4.hasNext())
+              {
+                boolArray.add(Boolean.parseBoolean(sc4.next().replaceAll("\\s", "")));
+              }
+              
+              sc4.close();
+
+            Map<String,String> map = new HashMap<String,String>();
+
     
-              String input2 = req.queryParams("input2").replaceAll("\\s","");
-              int input2AsInt = Integer.parseInt(input2);
-    
-              boolean result = App.search(inputList, input2AsInt);
-    
-              Map<String, Boolean> map = new HashMap<String, Boolean>();
-              map.put("result", result);
-              return new ModelAndView(map, "compute.mustache");
+            ArrayList<String> result = App.computation(inputIntegerArray,inputList,stringArr,boolArray);
+            String sum = "";
+            
+            if(result.size() != 0 && result != null){
+              for(int i = 0 ;i < result.size() ; i++)
+                sum += result.get(i); 
+              map.put("result", sum);
+            }
+            else{
+              map.put("result","uncoputable! form1&2:Integer, form3:String, form4:boolean. All form's set size must be equal!");
+            }
+            return new ModelAndView(map, "compute.mustache");
             }, new MustacheTemplateEngine());
-    
     
             get("/compute",
                 (rq, rs) -> {
@@ -82,6 +122,31 @@ public class App {
             }
             return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
         }
-    
-    
+
+        
+        public static ArrayList<String> computation(ArrayList<Integer> intArray, ArrayList<Integer> intArrayList, ArrayList<String> stringArr, ArrayList<Boolean> addOrNot){
+          int minimum = 0;
+          int maximum = 0;
+          if(intArray == null || intArrayList == null || stringArr == null || addOrNot == null){
+            return null;
+          }
+          if(intArray.size() != intArrayList.size()|| intArray.size() != addOrNot.size() || intArray.size() < stringArr.size()){
+            return null;
+          }
+          for(int i = 0; i < stringArr.size(); i++){
+            if(intArray.get(i) <= intArrayList.get(i) ){
+              minimum = intArray.get(i);
+              maximum = intArrayList.get(i);
+            }
+            else{
+              minimum = intArrayList.get(i) ;
+              maximum = intArray.get(i);
+            }
+            for (int j = 0; j < minimum; j++){
+              if(addOrNot.get(i))
+                  stringArr.set(i, stringArr.get(i) + "" + maximum);
+            }
+          }
+          return stringArr;
+        }
 }
